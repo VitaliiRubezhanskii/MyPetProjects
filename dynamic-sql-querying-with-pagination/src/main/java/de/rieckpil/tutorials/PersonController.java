@@ -1,19 +1,19 @@
 package de.rieckpil.tutorials;
 
-import java.time.Instant;
-
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
+import java.lang.reflect.Field;
+import java.text.FieldPosition;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/persons")
@@ -34,11 +34,11 @@ public class PersonController {
 		BooleanBuilder booleanBuilder = new BooleanBuilder();
 
 		if (firstname != null && !firstname.isEmpty()) {
-			booleanBuilder.and(QPerson.person.firstname.eq(firstname));
+			booleanBuilder.and(QPerson.person.firstName.eq(firstname));
 		}
 
 		if (lastname != null && !lastname.isEmpty()) {
-			booleanBuilder.and(QPerson.person.lastname.eq(lastname));
+			booleanBuilder.and(QPerson.person.lastName.eq(lastname));
 		}
 
 		if (budget != null && budget != 0) {
@@ -61,6 +61,38 @@ public class PersonController {
 			@RequestParam(name = "size", defaultValue = "500") int size) {
 	
 		return personRepository.findAll(predicate, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+	}
+
+	@PostMapping("/fetched")
+	public Page<Person> getPersonsFetched(@RequestParam(name = "page", defaultValue = "0") int page,
+										  @RequestParam(name = "size", defaultValue = "500") int size,
+										  @RequestParam(name = "sort") String sort,
+										  @RequestBody List<SearchCriteria> searchCriteriaList) throws Exception{
+
+		BooleanBuilder builder = new BooleanBuilder();
+
+		for (SearchCriteria searchCriteria : searchCriteriaList) {
+			if (searchCriteria.getFieldName().equals("firstName")) {
+				if (searchCriteria.getOperator().equals("equals")) {
+					builder.and(QPerson.person.firstName.eq(searchCriteria.getFieldValue()));
+				}
+			}
+
+			if (searchCriteria.getFieldName().equals("lastName")) {
+				if (searchCriteria.getOperator().equals("equals")) {
+					builder.and(QPerson.person.lastName.eq(searchCriteria.getFieldValue()));
+				}
+			}
+
+			if (searchCriteria.getFieldName().equals("city")) {
+				if (searchCriteria.getOperator().equals("equals")) {
+					builder.and(QPerson.person.address.city.eq(searchCriteria.getFieldValue()));
+				}
+			}
+		}
+		return personRepository.findAll(builder.getValue(),
+				PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort)));
+
 	}
 
 }
