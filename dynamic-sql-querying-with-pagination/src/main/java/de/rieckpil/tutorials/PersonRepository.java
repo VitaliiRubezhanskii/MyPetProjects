@@ -5,4 +5,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 public interface PersonRepository extends JpaRepository<Person, Long>, QuerydslPredicateExecutor<Person> {
 
+
+
 }

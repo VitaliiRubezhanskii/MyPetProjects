@@ -35,6 +35,11 @@
 			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-jpa</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.14</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -82,6 +87,25 @@
 						<version>${querydsl.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.querydsl</groupId>
+				<artifactId>querydsl-maven-plugin</artifactId>
+				<version>${querydsl.version}</version>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>jpa-export</goal>
+						</goals>
+						<configuration>
+							<targetFolder>target/generated-sources/java</targetFolder>
+							<packages>
+								<package>com.example.domain</package>
+							</packages>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
